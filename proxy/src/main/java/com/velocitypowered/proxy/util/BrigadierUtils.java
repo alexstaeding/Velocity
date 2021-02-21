@@ -13,6 +13,8 @@ import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.velocitypowered.api.command.CommandSource;
 import java.util.Locale;
+import java.util.function.Predicate;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -53,14 +55,18 @@ public final class BrigadierUtils {
    *
    * @param alias the literal alias
    * @param brigadierCommand the command to execute
+   * @param requirement The requirement to run the command (e.g. a permission check)
    * @param suggestionProvider the suggestion provider
    * @return the built node
    */
   public static LiteralCommandNode<CommandSource> buildRawArgumentsLiteral(
-          final String alias, final Command<CommandSource> brigadierCommand,
-          SuggestionProvider<CommandSource> suggestionProvider) {
+          final String alias,
+          final Predicate<CommandSource> requirement,
+          final Command<CommandSource> brigadierCommand,
+          final SuggestionProvider<CommandSource> suggestionProvider) {
     return LiteralArgumentBuilder
             .<CommandSource>literal(alias.toLowerCase(Locale.ENGLISH))
+            .requires(requirement)
             .then(RequiredArgumentBuilder
                 .<CommandSource, String>argument("arguments", StringArgumentType.greedyString())
                 .suggests(suggestionProvider)
@@ -95,8 +101,8 @@ public final class BrigadierUtils {
   }
 
   /**
-   * Returns the splitted arguments of a command node built with
-   * {@link #buildRawArgumentsLiteral(String, Command, SuggestionProvider)}.
+   * Returns the split arguments of a command node built with
+   * {@link #buildRawArgumentsLiteral(String, Command, Predicate, SuggestionProvider)}.
    *
    * @param context the command context
    * @return the parsed arguments

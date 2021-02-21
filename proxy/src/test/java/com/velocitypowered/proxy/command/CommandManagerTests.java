@@ -499,7 +499,7 @@ public class CommandManagerTests {
 
       @Override
       public boolean hasPermission(Invocation invocation) {
-        return invocation.arguments().length() > 0;
+        return true;
       }
 
       @Override
@@ -521,7 +521,7 @@ public class CommandManagerTests {
 
       @Override
       public boolean hasPermission(CommandSource source, String @NonNull [] args) {
-        return args.length > 0;
+        return true;
       }
 
       @Override

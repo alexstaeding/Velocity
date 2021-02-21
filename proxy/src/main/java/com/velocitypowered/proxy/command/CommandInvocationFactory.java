@@ -10,7 +10,6 @@ import com.velocitypowered.api.command.CommandSource;
  *
  * @param <I> the type of the built invocation
  */
-@FunctionalInterface
 public interface CommandInvocationFactory<I extends CommandInvocation<?>> {
 
   /**
@@ -20,4 +19,11 @@ public interface CommandInvocationFactory<I extends CommandInvocation<?>> {
    * @return the built invocation context
    */
   I create(final CommandContext<CommandSource> context);
+
+  /**
+   * Creates an empty invocation for the given source (no args passed).
+   *
+   * @return An empty invocation for the given source
+   */
+  I create(final CommandSource source);
 }

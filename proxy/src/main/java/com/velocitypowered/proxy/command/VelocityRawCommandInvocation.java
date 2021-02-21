@@ -20,6 +20,11 @@ final class VelocityRawCommandInvocation extends AbstractCommandInvocation<Strin
               BrigadierUtils.getAlias(context),
               BrigadierUtils.getRawArguments(context));
     }
+
+    @Override
+    public RawCommand.Invocation create(CommandSource source) {
+      return new VelocityRawCommandInvocation(source, "", "");
+    }
   }
 
   private final String alias;

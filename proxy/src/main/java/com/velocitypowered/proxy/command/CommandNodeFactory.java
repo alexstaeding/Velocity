@@ -1,6 +1,5 @@
 package com.velocitypowered.proxy.command;
 
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.Command;
@@ -15,25 +14,14 @@ import com.velocitypowered.proxy.util.BrigadierUtils;
 public interface CommandNodeFactory<T extends Command> {
 
   InvocableCommandNodeFactory<SimpleCommand.Invocation> SIMPLE =
-      new InvocableCommandNodeFactory<SimpleCommand.Invocation>() {
-        @Override
-        protected SimpleCommand.Invocation createInvocation(
-                final CommandContext<CommandSource> context) {
-          return VelocitySimpleCommandInvocation.FACTORY.create(context);
-        }
-      };
+      new InvocableCommandNodeFactory<>(VelocitySimpleCommandInvocation.FACTORY);
 
   InvocableCommandNodeFactory<RawCommand.Invocation> RAW =
-      new InvocableCommandNodeFactory<RawCommand.Invocation>() {
-        @Override
-        protected RawCommand.Invocation createInvocation(
-                final CommandContext<CommandSource> context) {
-          return VelocityRawCommandInvocation.FACTORY.create(context);
-        }
-      };
+      new InvocableCommandNodeFactory<>(VelocityRawCommandInvocation.FACTORY);
 
   CommandNodeFactory<Command> FALLBACK = (alias, command) ->
       BrigadierUtils.buildRawArgumentsLiteral(alias,
+        source -> command.hasPermission(source, new String[0]),
         context -> {
           CommandSource source = context.getSource();
           String[] args = BrigadierUtils.getSplitArguments(context);
@@ -68,15 +56,22 @@ public interface CommandNodeFactory<T extends Command> {
    */
   LiteralCommandNode<CommandSource> create(String alias, T command);
 
-  abstract class InvocableCommandNodeFactory<I extends CommandInvocation<?>>
+  class InvocableCommandNodeFactory<I extends CommandInvocation<?>>
           implements CommandNodeFactory<InvocableCommand<I>> {
+
+    private final CommandInvocationFactory<I> invocationFactory;
+
+    protected InvocableCommandNodeFactory(CommandInvocationFactory<I> invocationFactory) {
+      this.invocationFactory = invocationFactory;
+    }
 
     @Override
     public LiteralCommandNode<CommandSource> create(
             final String alias, final InvocableCommand<I> command) {
       return BrigadierUtils.buildRawArgumentsLiteral(alias,
+          source -> command.hasPermission(invocationFactory.create(source)),
           context -> {
-            I invocation = createInvocation(context);
+            I invocation = invocationFactory.create(context);
             if (!command.hasPermission(invocation)) {
               return BrigadierCommand.FORWARD;
             }
@@ -84,7 +79,7 @@ public interface CommandNodeFactory<T extends Command> {
             return 1;
           },
           (context, builder) -> {
-            I invocation = createInvocation(context);
+            I invocation = invocationFactory.create(context);
 
             if (!command.hasPermission(invocation)) {
                 return builder.buildFuture();
@@ -98,7 +93,5 @@ public interface CommandNodeFactory<T extends Command> {
             });
           });
     }
-
-    protected abstract I createInvocation(final CommandContext<CommandSource> context);
   }
 }

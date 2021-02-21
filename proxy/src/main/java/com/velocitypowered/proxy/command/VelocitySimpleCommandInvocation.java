@@ -18,6 +18,11 @@ final class VelocitySimpleCommandInvocation extends AbstractCommandInvocation<St
       final String alias = BrigadierUtils.getAlias(context);
       return new VelocitySimpleCommandInvocation(context.getSource(), alias, arguments);
     }
+
+    @Override
+    public SimpleCommand.Invocation create(CommandSource source) {
+      return new VelocitySimpleCommandInvocation(source, "", new String[0]);
+    }
   }
 
   private final String alias;
